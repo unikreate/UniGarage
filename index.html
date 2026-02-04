@@ -319,6 +319,7 @@
 
     <!-- Audio Assets -->
     <audio id="crash-sound" src="fahhhhh.mp3" preload="auto"></audio>
+    <audio id="score-sound" src="dragon-studio-wow-423653.mp3" preload="auto"></audio>
 
     <!-- Main Content Overlay -->
     <div id="content">
@@ -1071,6 +1072,14 @@
             scene.remove(obj.mesh);
             score += 100;
             document.getElementById('score-display').innerText = score;
+            
+            // Play Score Sound
+            const sound = document.getElementById('score-sound');
+            if(sound) {
+                sound.currentTime = 0;
+                sound.play().catch(e => console.log("Audio playback failed:", e));
+            }
+
             // Increase speed by 1km/h per 100 points (0.005 * 200 = 1 km/h)
             gameConfig.currentSpeed += 0.005;
         }
