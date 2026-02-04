@@ -3,45 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> UniKreate | Premium 3D Garage Experience</title>
+    <title>Apex Automotive | M-Style Experience</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,300;0,500;0,700;0,900;1,300&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Exo+2:ital,wght@0,300;0,500;0,700;0,900;1,300&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
     
     <!-- Three.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
     <style>
         :root {
-            --primary: #f59e0b; /* Amber 500 */
-            --primary-glow: rgba(245, 158, 11, 0.6);
-            --dark: #0f172a;    /* Slate 900 */
-            --dark-glass: rgba(10, 15, 30, 0.75);
+            --primary: #14b8a6; /* Teal 500 */
+            --primary-dark: #0f766e;
+            --accent: #ef4444;  /* Red 500 */
+            --accent-glow: rgba(239, 68, 68, 0.6);
+            --dark: #111827;    /* Gray 900 */
+            --dark-glass: rgba(17, 24, 39, 0.85);
         }
         
         body {
             font-family: 'Exo 2', sans-serif;
             background-color: var(--dark);
-            /* Technical Grid Background blended with dark slate */
+            /* Comic Book Halftone Pattern */
             background-image: 
-                radial-gradient(circle at 50% 50%, transparent 0%, #0f172a 90%),
-                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
-            background-size: 100% 100%, 50px 50px, 50px 50px;
+                radial-gradient(var(--primary-dark) 15%, transparent 16%),
+                radial-gradient(var(--primary-dark) 15%, transparent 16%);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
             color: white;
             overflow-x: hidden;
             margin: 0;
+            user-select: none; /* Prevent text selection on touch */
+            -webkit-user-select: none;
+            touch-action: none; /* Prevent scrolling on mobile while playing */
             
-            /* Custom Tire Cursor */
-            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="13" fill="%231e293b" stroke="%23000" stroke-width="2"/><circle cx="16" cy="16" r="11" fill="none" stroke="%23f59e0b" stroke-width="1" stroke-dasharray="2 3"/><circle cx="16" cy="16" r="5" fill="%2394a3b8"/><path d="M16 11 L16 21 M11 16 L21 16" stroke="%23475569" stroke-width="2"/></svg>') 16 16, auto;
+            /* Custom Red/Teal Cursor */
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="13" fill="%23111827" stroke="%23000" stroke-width="2"/><circle cx="16" cy="16" r="11" fill="none" stroke="%23ef4444" stroke-width="2" stroke-dasharray="2 3"/><circle cx="16" cy="16" r="4" fill="%2314b8a6"/><path d="M16 11 L16 21 M11 16 L21 16" stroke="%23fff" stroke-width="2"/></svg>') 16 16, auto;
         }
 
         /* Interactive Elements Pointer */
         a, button, input, select, .cursor-pointer {
-            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="13" fill="%23f59e0b" stroke="%23fff" stroke-width="2"/><circle cx="16" cy="16" r="5" fill="%23fff"/><path d="M16 11 L16 21 M11 16 L21 16" stroke="%23f59e0b" stroke-width="2"/></svg>') 16 16, pointer;
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="13" fill="%23ef4444" stroke="%23fff" stroke-width="2"/><circle cx="16" cy="16" r="5" fill="%23fff"/><path d="M16 11 L16 21 M11 16 L21 16" stroke="%23ef4444" stroke-width="2"/></svg>') 16 16, pointer;
         }
 
         h1, h2, h3, .brand-font {
@@ -50,8 +55,11 @@
             letter-spacing: 0.05em;
         }
 
+        /* Cartoonish Header Style */
         h1 {
-            text-shadow: 0 0 30px rgba(0,0,0,0.5);
+            font-family: 'Rajdhani', sans-serif;
+            font-style: italic;
+            text-shadow: 4px 4px 0px var(--primary-dark);
         }
 
         /* 3D Canvas fixed in background */
@@ -69,105 +77,112 @@
         #content {
             position: relative;
             z-index: 10;
+            /* CRITICAL: Allows clicks to pass through empty areas to the 3D canvas */
+            pointer-events: none;
+            transition: opacity 0.5s ease;
         }
 
-        /* Enhanced Glass Panel */
+        /* Re-enable pointer events for interactive UI elements */
+        nav, section, footer, button, a, input, select, .glass-panel {
+            pointer-events: auto;
+        }
+
+        /* Enhanced Glass Panel with Teal Border */
         .glass-panel {
             background: var(--dark-glass);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-top: 1px solid rgba(255, 255, 255, 0.15); /* Highlight top edge */
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 2px solid var(--primary);
+            box-shadow: 0 10px 0 0 rgba(0,0,0,0.5); /* Cartoon hard shadow */
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border-radius: 12px;
         }
 
-        /* Cyberpunk Button - Outline */
-        .btn-cyber {
-            position: relative;
-            background: rgba(245, 158, 11, 0.05);
-            color: var(--primary);
-            border: 1px solid var(--primary);
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            /* Angled corners using clip-path */
-            clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
-            transition: all 0.3s ease;
-            overflow: hidden;
-        }
-        
-        .btn-cyber:hover {
-            background: var(--primary);
-            color: #000;
-            box-shadow: 0 0 25px var(--primary-glow);
-            text-shadow: none;
-            transform: translateY(-2px);
-        }
-
-        /* Cyberpunk Button - Filled */
-        .btn-cyber-filled {
+        /* Cartoon Button */
+        .btn-cartoon {
             position: relative;
             background: var(--primary);
             color: #000;
-            border: 1px solid var(--primary);
+            border: 2px solid #fff;
             font-weight: 800;
             text-transform: uppercase;
-            letter-spacing: 2px;
-            clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
-            transition: all 0.3s ease;
-            box-shadow: 0 0 15px rgba(245, 158, 11, 0.3);
+            letter-spacing: 1px;
+            padding: 12px 24px;
+            transform: skew(-10deg);
+            box-shadow: 5px 5px 0px #000;
+            transition: all 0.2s ease;
         }
         
-        .btn-cyber-filled:hover {
-            background: #fff;
+        .btn-cartoon:hover {
+            background: var(--accent);
+            color: #fff;
+            transform: skew(-10deg) translate(-2px, -2px);
+            box-shadow: 7px 7px 0px #000;
+        }
+
+        .btn-cartoon-outline {
+            position: relative;
+            background: transparent;
             color: var(--primary);
-            box-shadow: 0 0 35px var(--primary-glow);
-            transform: translateY(-2px);
+            border: 2px solid var(--primary);
+            font-weight: 800;
+            text-transform: uppercase;
+            padding: 12px 24px;
+            transform: skew(-10deg);
+            box-shadow: 5px 5px 0px rgba(20, 184, 166, 0.2);
+            transition: all 0.2s ease;
+        }
+        
+        .btn-cartoon-outline:hover {
+            background: var(--primary);
+            color: #000;
+            box-shadow: 5px 5px 0px var(--accent);
+            border-color: var(--accent);
         }
 
         /* Enhanced Service Card */
         .service-card {
-            border: 1px solid rgba(255,255,255,0.05);
-            transition: transform 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+            border: 2px solid var(--primary-dark);
+            background: rgba(17, 24, 39, 0.9);
         }
         
         .service-card:hover {
-            transform: translateY(-8px);
-            border-color: var(--primary);
-            box-shadow: 0 10px 40px -10px rgba(245, 158, 11, 0.2);
-            background: linear-gradient(145deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9));
+            transform: translateY(-8px) scale(1.02);
+            border-color: var(--accent);
+            box-shadow: 0 15px 0 -5px var(--accent); /* Hard shadow */
         }
 
         .service-card svg {
-            filter: drop-shadow(0 0 5px rgba(245,158,11, 0.5));
+            filter: drop-shadow(0 0 0 rgba(0,0,0,0));
             transition: 0.3s;
+            color: var(--primary);
         }
         
         .service-card:hover svg {
-            filter: drop-shadow(0 0 15px rgba(245,158,11, 1));
-            transform: scale(1.1);
+            color: var(--accent);
+            transform: scale(1.2) rotate(5deg);
         }
 
         /* Scrollbar styling */
         ::-webkit-scrollbar {
-            width: 6px;
+            width: 10px;
         }
         ::-webkit-scrollbar-track {
-            background: #0f172a;
+            background: #111827;
         }
         ::-webkit-scrollbar-thumb {
-            background: #334155;
-            border-radius: 3px;
+            background: var(--primary);
+            border: 2px solid #111827;
+            border-radius: 5px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: #f59e0b;
+            background: var(--accent);
         }
         
         .fade-in-section {
             opacity: 0;
             transform: translateY(30px);
-            transition: opacity 1s cubic-bezier(0.5, 0, 0, 1), transform 1s cubic-bezier(0.5, 0, 0, 1);
+            transition: opacity 0.8s ease, transform 0.8s ease;
         }
         
         .fade-in-section.is-visible {
@@ -177,50 +192,96 @@
         
         /* Gradient Text */
         .text-gradient {
-            background: linear-gradient(to right, #f59e0b, #ef4444);
+            background: linear-gradient(to right, var(--primary), var(--accent));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            font-style: italic;
         }
 
-        /* --- NEW VIDEO CONTAINER CSS --- */
-        .video-container {
-            position: relative;
-            width: 100%;
-            height: 60vh; /* Adjust height as needed */
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: #000; /* Fallback color */
-            margin-bottom: 2rem;
-            border-bottom: 1px solid rgba(245, 158, 11, 0.3);
-        }
-
-        .bg-video {
-            position: absolute;
+        /* GAME UI (Hidden by default) */
+        #game-ui {
+            display: none;
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            object-fit: cover;
-            z-index: 0;
-            opacity: 0.6; /* Slight transparency to blend with theme */
+            z-index: 50;
+            pointer-events: none;
         }
 
-        .video-container .content {
-            position: relative;
-            z-index: 10;
-            text-align: center;
+        .game-hud {
+            position: absolute;
+            bottom: 2rem;
+            right: 2rem;
+            background: rgba(0,0,0,0.8);
+            border: 2px solid var(--primary);
+            padding: 1rem;
+            border-radius: 10px;
             color: white;
+            font-family: 'Rajdhani', sans-serif;
+            pointer-events: auto;
+            text-align: right;
         }
 
-        .video-container h1 {
-            font-size: 3rem;
+        .game-overlay {
+            position: absolute;
+            top: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            pointer-events: auto;
+            width: 90%;
+            max-width: 600px;
+        }
+
+        #tutorial-text {
+            transition: opacity 1s ease-out;
+        }
+
+        #game-over-screen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 60;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            pointer-events: auto;
+        }
+
+        .key-hint {
+            display: inline-block;
+            background: #333;
+            border: 1px solid #555;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            margin: 0 0.2rem;
             font-weight: bold;
+            color: var(--primary);
+        }
+
+        .exit-btn {
+            background: var(--accent);
+            color: white;
+            border: 2px solid white;
+            padding: 0.5rem 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
             text-transform: uppercase;
-            letter-spacing: 0.1em;
-            text-shadow: 0 4px 10px rgba(0,0,0,0.8);
+            border-radius: 4px;
+            box-shadow: 4px 4px 0 black;
+            transition: all 0.2s;
+            pointer-events: auto;
+        }
+        .exit-btn:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0 black;
         }
     </style>
 </head>
@@ -229,75 +290,87 @@
     <!-- 3D Background Container -->
     <div id="canvas-container"></div>
 
+    <!-- GAME UI LAYER -->
+    <div id="game-ui">
+        <div class="game-overlay">
+            <h2 class="text-4xl font-black italic text-white mb-2" style="text-shadow: 2px 2px 0 var(--primary);">ENDLESS RUNNER</h2>
+            <div id="tutorial-text" class="bg-black/50 p-2 rounded backdrop-blur text-sm">
+                Desktop: Use <span class="key-hint">A</span> / <span class="key-hint">D</span> or <span class="key-hint">ARROWS</span> to Dodge<br>
+                Mobile: Tap <span class="key-hint">LEFT</span> or <span class="key-hint">RIGHT</span> side of screen
+            </div>
+            <button class="exit-btn mt-4 bg-gray-600 border-gray-400 hover:bg-gray-500" onclick="stopGame()">Exit Game</button>
+        </div>
+        <div class="game-hud">
+            <div class="text-xl font-bold">SCORE: <span id="score-display" class="text-yellow-400 text-3xl">0</span></div>
+            <div class="text-sm font-bold opacity-70">SPEED: <span id="speed-meter" class="text-teal-400">0</span> KM/H</div>
+        </div>
+    </div>
+
+    <!-- GAME OVER SCREEN -->
+    <div id="game-over-screen">
+        <h2 class="text-6xl font-black italic text-red-500 mb-4" style="text-shadow: 4px 4px 0 white;">CRASHED!</h2>
+        <div class="text-2xl text-white mb-8 font-bold">FINAL SCORE: <span id="final-score" class="text-yellow-400">0</span></div>
+        <div class="text-gray-300 mb-8 animate-pulse text-sm uppercase tracking-widest">Press ENTER, SPACE or Tap to Restart</div>
+        <div class="flex space-x-4">
+            <button class="btn-cartoon text-xl" onclick="resetGame()">TRY AGAIN</button>
+            <button class="btn-cartoon-outline text-white border-white hover:bg-white hover:text-black" onclick="stopGame()">QUIT</button>
+        </div>
+    </div>
+
+    <!-- Audio Assets -->
+    <audio id="crash-sound" src="fahhhhh.mp3" preload="auto"></audio>
+
     <!-- Main Content Overlay -->
     <div id="content">
         
         <!-- Navigation -->
-        <nav class="glass-panel sticky top-0 border-b-0 z-50">
-            <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+        <nav class="glass-panel mx-4 mt-4 sticky top-4 border-b-0 z-50 rounded-xl">
+            <div class="container mx-auto px-6 py-3 flex justify-between items-center">
                 <div class="flex items-center space-x-2">
                     <!-- Simple SVG Icon -->
-                    <svg class="w-8 h-8 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    <svg class="w-8 h-8 text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                     </svg>
-                    <span class="text-2xl font-bold tracking-wider brand-font text-white">APEX<span class="text-amber-500" style="text-shadow: 0 0 10px rgba(245,158,11,0.5);">AUTO</span></span>
+                    <span class="text-3xl font-black italic tracking-wider brand-font text-white" style="text-shadow: 2px 2px 0 var(--primary);">APEX<span class="text-red-500">M</span></span>
                 </div>
                 <div class="hidden md:flex space-x-8 text-sm font-bold tracking-wider items-center">
-                    <a href="#home" class="hover:text-amber-500 transition-colors">HOME</a>
-                    <a href="#services" class="hover:text-amber-500 transition-colors">SERVICES</a>
-                    <a href="#tech" class="hover:text-amber-500 transition-colors">TECHNOLOGY</a>
-                    <a href="#contact" class="px-5 py-2 btn-cyber text-xs">BOOK VISIT</a>
+                    <a href="#home" class="hover:text-teal-400 transition-colors uppercase">Home</a>
+                    <a href="#services" class="hover:text-teal-400 transition-colors uppercase">Services</a>
+                    <a href="#tech" class="hover:text-teal-400 transition-colors uppercase">M-Power</a>
+                    <a href="#contact" class="px-5 py-2 btn-cartoon text-xs no-underline">BOOK NOW</a>
                 </div>
                 <!-- Mobile Menu Button -->
                 <button class="md:hidden text-white" onclick="alert('Menu toggled')">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
                 </button>
             </div>
         </nav>
-
-        <!-- NEW VIDEO SECTION -->
-        <div class="video-container fade-in-section">
-            <video autoplay muted loop playsinline poster="fallback-image.jpg" class="bg-video">
-                <source src="assets/v8-bg.mp4" type="video/mp4">
-                Your browser does not support the video tag.
-            </video>
-            <div class="content">
-                <h1>Welcome to Rapydlaunch</h1>
-            </div>
-        </div>
 
         <!-- Hero Section -->
         <section id="home" class="min-h-screen flex items-center relative">
             <div class="container mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-12">
                 <div class="space-y-8 fade-in-section" style="z-index: 20;">
-                    <div class="inline-flex items-center px-4 py-1.5 border border-amber-500/30 rounded-full bg-amber-500/5 backdrop-blur-sm text-amber-400 text-xs tracking-[0.2em] font-bold uppercase mb-2">
-                        <span class="w-2 h-2 rounded-full bg-amber-500 mr-2 animate-pulse"></span>
-                        Premium Mechanics
+                    <div class="inline-flex items-center px-4 py-2 border-2 border-teal-500 bg-teal-900/50 rounded-lg text-teal-300 text-sm font-bold uppercase mb-2 transform -skew-x-12">
+                        <span class="w-3 h-3 bg-red-500 mr-2 animate-bounce"></span>
+                        Ultimate Driving Machine
                     </div>
-                    <h1 class="text-6xl md:text-8xl font-bold leading-none tracking-tighter">
-                        PRECISION <br>
-                        <span class="text-gradient">ENGINEERING</span>
+                    <h1 class="text-6xl md:text-8xl font-black leading-none tracking-tighter">
+                        STREET <br>
+                        <span class="text-gradient" style="font-size: 1.1em;">DOMINANCE</span>
                     </h1>
-                    <p class="text-gray-300 text-lg md:text-xl max-w-lg leading-relaxed border-l-2 border-amber-500/50 pl-6">
-                        Experience the future of automotive care. We combine advanced diagnostics with master craftsmanship to keep your machine running at peak performance.
+                    <p class="text-gray-300 text-lg md:text-xl max-w-lg leading-relaxed border-l-4 border-red-500 pl-6 bg-black/20 py-2">
+                        Specialized tuning for high-performance sedans. We turn stock into shock. <span class="text-teal-400 font-bold">CLICK THE CAR</span> to play the Endless Runner!
                     </p>
                     <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 pt-4">
-                        <button onclick="document.getElementById('services').scrollIntoView({behavior: 'smooth'})" class="px-8 py-4 btn-cyber-filled">
-                            EXPLORE SERVICES
+                        <button onclick="document.getElementById('services').scrollIntoView({behavior: 'smooth'})" class="btn-cartoon">
+                            Check Upgrades
                         </button>
-                        <button class="px-8 py-4 btn-cyber">
-                            VIRTUAL TOUR
+                        <button class="btn-cartoon-outline">
+                            View Gallery
                         </button>
                     </div>
                 </div>
-                <!-- Right side is empty to show the 3D engine model -->
-            </div>
-            
-            <!-- Scroll Indicator -->
-            <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 text-gray-400 flex flex-col items-center gap-2 opacity-50">
-                <span class="text-[10px] uppercase tracking-widest">Scroll</span>
-                <div class="w-[1px] h-12 bg-gradient-to-b from-amber-500 to-transparent"></div>
+                <!-- Right side is empty to show the 3D car model -->
             </div>
         </section>
 
@@ -305,60 +378,59 @@
         <section id="services" class="py-32 relative">
             <div class="container mx-auto px-6">
                 <div class="text-center mb-20 fade-in-section">
-                    <h2 class="text-4xl md:text-5xl font-bold mb-4">OUR EXPERTISE</h2>
-                    <div class="h-1 w-24 bg-gradient-to-r from-transparent via-amber-500 to-transparent mx-auto"></div>
+                    <h2 class="text-5xl font-black mb-4 italic text-white" style="text-shadow: 3px 3px 0 var(--primary);">GARAGE SERVICES</h2>
+                    <div class="h-2 w-32 bg-red-500 mx-auto transform -skew-x-12"></div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                     <!-- Card 1 -->
-                    <div class="glass-panel p-10 rounded-2xl service-card fade-in-section group">
-                        <div class="w-16 h-16 bg-gradient-to-br from-gray-800 to-black border border-gray-700 rounded-xl flex items-center justify-center mb-6 group-hover:border-amber-500 transition-colors shadow-lg">
-                            <svg class="w-8 h-8 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path></svg>
+                    <div class="glass-panel p-10 service-card fade-in-section group">
+                        <div class="w-16 h-16 bg-teal-900 border-2 border-teal-500 rounded-lg flex items-center justify-center mb-6 shadow-lg transform rotate-3 group-hover:rotate-0 transition-transform">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
                         </div>
-                        <h3 class="text-2xl font-bold mb-3 text-white group-hover:text-amber-500 transition-colors">AI Diagnostics</h3>
-                        <p class="text-gray-400 leading-relaxed text-sm">We utilize state-of-the-art computer scanning tools to pinpoint issues with surgical precision, saving you time and money.</p>
+                        <h3 class="text-2xl font-bold mb-3 text-white uppercase italic">Stage 2 Tuning</h3>
+                        <p class="text-gray-400 font-medium">Push your V8 Twin Turbo to the limit with our aggressive ECU maps and downpipe installations.</p>
                     </div>
 
                     <!-- Card 2 -->
-                    <div class="glass-panel p-10 rounded-2xl service-card fade-in-section group" style="transition-delay: 100ms;">
-                        <div class="w-16 h-16 bg-gradient-to-br from-gray-800 to-black border border-gray-700 rounded-xl flex items-center justify-center mb-6 group-hover:border-amber-500 transition-colors shadow-lg">
-                            <svg class="w-8 h-8 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    <div class="glass-panel p-10 service-card fade-in-section group" style="transition-delay: 100ms;">
+                        <div class="w-16 h-16 bg-teal-900 border-2 border-teal-500 rounded-lg flex items-center justify-center mb-6 shadow-lg transform -rotate-2 group-hover:rotate-0 transition-transform">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                         </div>
-                        <h3 class="text-2xl font-bold mb-3 text-white group-hover:text-amber-500 transition-colors">Performance Tuning</h3>
-                        <p class="text-gray-400 leading-relaxed text-sm">Unlock your engine's true potential. From ECU remapping to turbo installations, we optimize for power and efficiency.</p>
+                        <h3 class="text-2xl font-bold mb-3 text-white uppercase italic">Suspension Geometry</h3>
+                        <p class="text-gray-400 font-medium">Laser alignment and coilover setup to ensure your M-Car handles like it's on rails.</p>
                     </div>
 
                     <!-- Card 3 -->
-                    <div class="glass-panel p-10 rounded-2xl service-card fade-in-section group" style="transition-delay: 200ms;">
-                        <div class="w-16 h-16 bg-gradient-to-br from-gray-800 to-black border border-gray-700 rounded-xl flex items-center justify-center mb-6 group-hover:border-amber-500 transition-colors shadow-lg">
-                            <svg class="w-8 h-8 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                    <div class="glass-panel p-10 service-card fade-in-section group" style="transition-delay: 200ms;">
+                        <div class="w-16 h-16 bg-teal-900 border-2 border-teal-500 rounded-lg flex items-center justify-center mb-6 shadow-lg transform rotate-2 group-hover:rotate-0 transition-transform">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
                         </div>
-                        <h3 class="text-2xl font-bold mb-3 text-white group-hover:text-amber-500 transition-colors">Fluid Dynamics</h3>
-                        <p class="text-gray-400 leading-relaxed text-sm">Complete synthetic oil changes, brake flushes, and transmission services using only top-tier lubricants.</p>
+                        <h3 class="text-2xl font-bold mb-3 text-white uppercase italic">Custom Exhaust</h3>
+                        <p class="text-gray-400 font-medium">Fabrication of titanium exhaust systems for that signature pops, bangs, and raw roar.</p>
                     </div>
                 </div>
             </div>
         </section>
 
         <!-- Stats Section -->
-        <section class="py-20 border-y border-gray-800/50 bg-slate-900/30 backdrop-blur-sm relative overflow-hidden">
-            <div class="absolute inset-0 bg-amber-500/5 skew-x-12 transform -translate-x-full"></div>
+        <section class="py-20 border-y-4 border-teal-500 bg-black/50 relative overflow-hidden">
             <div class="container mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8 text-center relative z-10">
                 <div class="fade-in-section">
-                    <div class="text-5xl md:text-6xl font-bold text-white mb-2 brand-font" style="text-shadow: 0 0 20px rgba(255,255,255,0.2);">12+</div>
-                    <div class="text-amber-500 text-xs tracking-[0.2em] font-bold uppercase">Years Experience</div>
+                    <div class="text-6xl font-black text-white mb-2 italic" style="-webkit-text-stroke: 2px var(--primary); color: transparent;">0-60</div>
+                    <div class="text-red-500 text-sm font-bold uppercase tracking-widest bg-black inline-block px-2">2.8 Seconds</div>
                 </div>
                 <div class="fade-in-section">
-                    <div class="text-5xl md:text-6xl font-bold text-white mb-2 brand-font" style="text-shadow: 0 0 20px rgba(255,255,255,0.2);">5k+</div>
-                    <div class="text-amber-500 text-xs tracking-[0.2em] font-bold uppercase">Engines Tuned</div>
+                    <div class="text-6xl font-black text-white mb-2 italic" style="-webkit-text-stroke: 2px var(--primary); color: transparent;">HP</div>
+                    <div class="text-red-500 text-sm font-bold uppercase tracking-widest bg-black inline-block px-2">625+ Tuned</div>
                 </div>
                 <div class="fade-in-section">
-                    <div class="text-5xl md:text-6xl font-bold text-white mb-2 brand-font" style="text-shadow: 0 0 20px rgba(255,255,255,0.2);">24/7</div>
-                    <div class="text-amber-500 text-xs tracking-[0.2em] font-bold uppercase">Emergency Support</div>
+                    <div class="text-6xl font-black text-white mb-2 italic" style="-webkit-text-stroke: 2px var(--primary); color: transparent;">24h</div>
+                    <div class="text-red-500 text-sm font-bold uppercase tracking-widest bg-black inline-block px-2">Turnaround</div>
                 </div>
                 <div class="fade-in-section">
-                    <div class="text-5xl md:text-6xl font-bold text-white mb-2 brand-font" style="text-shadow: 0 0 20px rgba(255,255,255,0.2);">100%</div>
-                    <div class="text-amber-500 text-xs tracking-[0.2em] font-bold uppercase">Satisfaction</div>
+                    <div class="text-6xl font-black text-white mb-2 italic" style="-webkit-text-stroke: 2px var(--primary); color: transparent;">100%</div>
+                    <div class="text-red-500 text-sm font-bold uppercase tracking-widest bg-black inline-block px-2">Street Legal</div>
                 </div>
             </div>
         </section>
@@ -366,63 +438,41 @@
         <!-- Contact Form -->
         <section id="contact" class="py-32">
             <div class="container mx-auto px-6">
-                <div class="glass-panel max-w-5xl mx-auto rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row fade-in-section border border-gray-700/50">
-                    <div class="p-12 md:w-5/12 bg-gradient-to-br from-amber-600 to-orange-700 text-white flex flex-col justify-center relative overflow-hidden">
-                        <!-- Decorative circle -->
-                        <div class="absolute -top-10 -left-10 w-40 h-40 bg-white/10 rounded-full blur-2xl"></div>
-                        <div class="absolute bottom-10 right-10 w-60 h-60 bg-black/10 rounded-full blur-3xl"></div>
+                <div class="glass-panel max-w-5xl mx-auto rounded-none transform skew-x-[-2deg] flex flex-col md:flex-row fade-in-section border-4 border-white shadow-[10px_10px_0px_var(--primary)]">
+                    <div class="p-12 md:w-5/12 bg-red-600 text-white flex flex-col justify-center relative overflow-hidden">
+                        <h3 class="text-4xl font-black mb-6 italic uppercase">Start Your Build</h3>
+                        <p class="mb-8 font-bold leading-relaxed relative z-10">Don't settle for stock. Book your consultation now and unleash the beast.</p>
                         
-                        <h3 class="text-3xl font-bold mb-6 relative z-10">Book Your Service</h3>
-                        <p class="mb-8 text-white/90 leading-relaxed relative z-10">Ready to optimize your vehicle? Fill out the form and our mechanics will get back to you within 24 hours.</p>
-                        
-                        <div class="space-y-6 relative z-10">
-                            <div class="flex items-center space-x-4 p-3 bg-white/10 rounded-lg backdrop-blur-sm border border-white/10">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
-                                <span class="font-medium tracking-wide">+1 (555) 123-4567</span>
+                        <div class="space-y-6 relative z-10 font-bold">
+                            <div class="flex items-center space-x-4">
+                                <span class="text-2xl">📞</span>
+                                <span class="tracking-wide">+1 (555) M-POWER</span>
                             </div>
-                            <div class="flex items-center space-x-4 p-3 bg-white/10 rounded-lg backdrop-blur-sm border border-white/10">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-                                <span class="font-medium tracking-wide">service@apexauto.com</span>
-                            </div>
-                            <div class="flex items-center space-x-4 p-3 bg-white/10 rounded-lg backdrop-blur-sm border border-white/10">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                                <span class="font-medium tracking-wide">890 Turbo Lane, Motor City</span>
+                            <div class="flex items-center space-x-4">
+                                <span class="text-2xl">✉️</span>
+                                <span class="tracking-wide">builds@apex-m.com</span>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="p-12 md:w-7/12 bg-slate-900/80 backdrop-blur-xl">
+                    <div class="p-12 md:w-7/12 bg-gray-900">
                         <form onsubmit="event.preventDefault(); alert('Request sent! We will contact you shortly.');" class="space-y-6">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <label class="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">Name</label>
-                                    <input type="text" class="w-full bg-slate-800/50 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all placeholder-gray-600" placeholder="John Doe">
+                                    <label class="block text-xs font-black text-teal-400 mb-2 uppercase tracking-wider">Name</label>
+                                    <input type="text" class="w-full bg-gray-800 border-2 border-gray-700 rounded-none px-4 py-3 text-white focus:outline-none focus:border-teal-500 transition-colors placeholder-gray-600" placeholder="Driver Name">
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">Email</label>
-                                    <input type="email" class="w-full bg-slate-800/50 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all placeholder-gray-600" placeholder="john@example.com">
+                                    <label class="block text-xs font-black text-teal-400 mb-2 uppercase tracking-wider">Email</label>
+                                    <input type="email" class="w-full bg-gray-800 border-2 border-gray-700 rounded-none px-4 py-3 text-white focus:outline-none focus:border-teal-500 transition-colors placeholder-gray-600" placeholder="email@example.com">
                                 </div>
                             </div>
                             <div>
-                                <label class="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">Service Type</label>
-                                <div class="relative">
-                                    <select class="w-full bg-slate-800/50 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all appearance-none">
-                                        <option>General Inspection</option>
-                                        <option>Performance Tuning</option>
-                                        <option>Oil & Fluids</option>
-                                        <option>Engine Repair</option>
-                                    </select>
-                                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-white">
-                                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
-                                    </div>
-                                </div>
+                                <label class="block text-xs font-black text-teal-400 mb-2 uppercase tracking-wider">Car Model</label>
+                                <input type="text" class="w-full bg-gray-800 border-2 border-gray-700 rounded-none px-4 py-3 text-white focus:outline-none focus:border-teal-500 transition-colors placeholder-gray-600" placeholder="e.g. BMW M5 F90">
                             </div>
-                            <div>
-                                <label class="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">Additional Details</label>
-                                <textarea class="w-full bg-slate-800/50 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all placeholder-gray-600 h-32 resize-none" placeholder="Describe the issue..."></textarea>
-                            </div>
-                            <button type="submit" class="w-full py-4 mt-2 btn-cyber-filled">
-                                SUBMIT REQUEST
+                            <button type="submit" class="w-full py-4 mt-2 btn-cartoon">
+                                LAUNCH PROJECT
                             </button>
                         </form>
                     </div>
@@ -430,289 +480,696 @@
             </div>
         </section>
 
-        <footer class="bg-slate-950 py-8 border-t border-gray-800/50 text-center text-gray-500 text-xs tracking-wider">
-            <p>&copy; 2024 APEX AUTOMOTIVE. <span class="text-amber-500">PRECISION ENGINEERED.</span></p>
+        <footer class="bg-black py-8 border-t-4 border-teal-500 text-center text-gray-500 text-xs font-bold tracking-widest uppercase">
+            <p>&copy; 2024 APEX M-DIVISION. <span class="text-red-500">NO SPEED LIMITS.</span></p>
         </footer>
     </div>
 
     <script>
+        // --- Game State Variables ---
+        let gameActive = false;
+        let isGameOver = false;
+        let carGroup;
+        let wheels = [];
+        let shapesGroup;
+        let sceneryGroup; // New group for scenery
+        let roadGroup;
+        let camera, scene, renderer;
+        let tutorialTimeout;
+        
+        let score = 0;
+        let lastSpawnZ = -20;
+        let collidables = []; 
+        let sceneryCollidables = []; // To manage scenery cleanup
+
+        // Physics & Config
+        const gameConfig = {
+            baseSpeed: 0.375, // 0.375 * 200 = 75 km/h
+            currentSpeed: 0.375,
+            laneWidth: 3.5,
+            maxX: 6,
+            steerSpeed: 0.3
+        };
+
+        const keys = {
+            a: false,
+            d: false,
+            ArrowLeft: false,
+            ArrowRight: false
+        };
+
         // --- 3D Scene Implementation ---
         const init3D = () => {
             const container = document.getElementById('canvas-container');
-            const scene = new THREE.Scene();
+            scene = new THREE.Scene();
             
-            // Adjusted Fog for deeper atmosphere
-            scene.fog = new THREE.FogExp2(0x0f172a, 0.025);
+            // Comic/Toon Fog
+            scene.fog = new THREE.Fog(0x111827, 8, 50); // Increased view distance
 
-            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
             
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(window.devicePixelRatio);
-            renderer.shadowMap.enabled = true; // Enable shadows
-            renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Softer shadows
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.BasicShadowMap; 
             container.appendChild(renderer.domElement);
 
-            // Lighting Refined
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.3); // Slightly darker ambient
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
             scene.add(ambientLight);
 
-            const mainLight = new THREE.DirectionalLight(0xffffff, 1.2);
-            mainLight.position.set(5, 10, 7);
-            mainLight.castShadow = true;
-            mainLight.shadow.mapSize.width = 1024; 
-            mainLight.shadow.mapSize.height = 1024;
-            scene.add(mainLight);
+            const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
+            dirLight.position.set(10, 20, 10);
+            dirLight.castShadow = true;
+            dirLight.shadow.mapSize.width = 1024;
+            dirLight.shadow.mapSize.height = 1024;
+            dirLight.shadow.camera.far = 100;
+            dirLight.shadow.camera.left = -30;
+            dirLight.shadow.camera.right = 30;
+            scene.add(dirLight);
 
-            const amberLight = new THREE.PointLight(0xf59e0b, 3, 50); // Intense amber
-            amberLight.position.set(2, 2, 2);
-            scene.add(amberLight);
-
-            const blueLight = new THREE.PointLight(0x3b82f6, 2, 50); // Cool contrast blue
-            blueLight.position.set(-5, 0, -2);
-            scene.add(blueLight);
-            
-            // Rim light for edges
-            const rimLight = new THREE.SpotLight(0xffffff, 2);
-            rimLight.position.set(0, 5, -5);
+            // Rim light
+            const rimLight = new THREE.SpotLight(0x14b8a6, 5);
+            rimLight.position.set(-5, 5, -5);
             rimLight.lookAt(0,0,0);
             scene.add(rimLight);
 
-            // --- V8 Engine Construction ---
-            const engineGroup = new THREE.Group();
-            
-            // Materials
-            const blockMaterial = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.6, metalness: 0.6 }); // Dark Cast Iron
-            const headMaterial = new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.3, metalness: 0.9 }); // Aluminum
-            const coverMaterial = new THREE.MeshStandardMaterial({ color: 0xf59e0b, roughness: 0.2, metalness: 0.8 }); // Amber Painted Covers
-            const chromeMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.0, metalness: 1.0 }); // Chrome
-            const darkMetalMaterial = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.7, metalness: 0.4 }); // Dark parts
+            // --- CAR CONSTRUCTION ---
+            createCar();
 
-            // 1. Engine Block Base (The 'V' valley)
-            const blockGeo = new THREE.BoxGeometry(1.5, 1.5, 4);
-            const blockBase = new THREE.Mesh(blockGeo, blockMaterial);
-            blockBase.position.y = -0.5;
-            blockBase.castShadow = true;
-            blockBase.receiveShadow = true;
-            engineGroup.add(blockBase);
-
-            // Function to create a cylinder bank
-            const createBank = (isLeft) => {
-                const bankGroup = new THREE.Group();
-                const angle = isLeft ? Math.PI / 4 : -Math.PI / 4;
-                bankGroup.rotation.z = angle;
-
-                // Main Bank Block
-                const bankGeo = new THREE.BoxGeometry(1.2, 1.2, 4);
-                const bankMesh = new THREE.Mesh(bankGeo, blockMaterial);
-                bankMesh.position.y = 0.6;
-                bankMesh.castShadow = true;
-                bankMesh.receiveShadow = true;
-                bankGroup.add(bankMesh);
-
-                // Cylinder Heads (Valve Covers)
-                const coverGeo = new THREE.BoxGeometry(1, 0.4, 3.8);
-                const cover = new THREE.Mesh(coverGeo, coverMaterial);
-                cover.position.y = 1.3;
-                cover.castShadow = true;
-                cover.receiveShadow = true;
-                bankGroup.add(cover);
-
-                // Add stylized spark plugs/injectors
-                for(let i=0; i<4; i++) {
-                    const plugGeo = new THREE.CylinderGeometry(0.1, 0.1, 0.5);
-                    const plug = new THREE.Mesh(plugGeo, chromeMaterial);
-                    plug.rotation.x = Math.PI / 2;
-                    plug.position.set(0.6 * (isLeft ? 1 : -1), 1.0, -1.2 + i * 0.8);
-                    bankGroup.add(plug);
-                }
-
-                // Exhaust Headers (Curved tubes coming out side)
-                for(let i=0; i<4; i++) {
-                    const tubeGeo = new THREE.TorusGeometry(0.4, 0.1, 8, 16, Math.PI);
-                    const tube = new THREE.Mesh(tubeGeo, darkMetalMaterial);
-                    // rotate to come out side
-                    tube.rotation.y = Math.PI / 2; 
-                    tube.rotation.x = isLeft ? Math.PI : 0;
-                    tube.position.set(0.7 * (isLeft?1:-1), 0.5, -1.2 + i * 0.8);
-                    bankGroup.add(tube);
-                }
-
-                return bankGroup;
-            };
-
-            const leftBank = createBank(true);
-            const rightBank = createBank(false);
-            
-            // Adjust positions to form V
-            leftBank.position.x = -0.6;
-            rightBank.position.x = 0.6;
-
-            engineGroup.add(leftBank);
-            engineGroup.add(rightBank);
-
-            // 2. Intake Manifold (Center Top)
-            const intakeGeo = new THREE.BoxGeometry(1, 0.5, 3.5);
-            const intake = new THREE.Mesh(intakeGeo, headMaterial);
-            intake.position.set(0, 0.8, 0);
-            intake.castShadow = true;
-            engineGroup.add(intake);
-
-            // Intake pipes (velocity stacks style)
-            for(let i=0; i<8; i++) {
-                const stackGeo = new THREE.CylinderGeometry(0.15, 0.1, 0.6, 16);
-                const stack = new THREE.Mesh(stackGeo, chromeMaterial);
-                stack.position.set((i%2===0 ? 0.25 : -0.25), 1.2, -1.4 + Math.floor(i/2) * 0.8 + (i%2)*0.2); // Staggered
-                stack.castShadow = true;
-                engineGroup.add(stack);
+            // --- Background Floating Elements (Menu Mode Only) ---
+            shapesGroup = new THREE.Group();
+            const shapeMat = new THREE.MeshToonMaterial({ color: 0x14b8a6 }); 
+            const icoGeo = new THREE.IcosahedronGeometry(0.5, 0);
+            for(let i=0; i<15; i++) {
+                const mesh = new THREE.Mesh(icoGeo, shapeMat);
+                mesh.position.set(
+                    (Math.random() - 0.5) * 30,
+                    (Math.random() - 0.5) * 20 + 5,
+                    (Math.random() - 0.5) * 20 - 10
+                );
+                mesh.rotation.set(Math.random()*Math.PI, Math.random()*Math.PI, 0);
+                shapesGroup.add(mesh);
             }
+            scene.add(shapesGroup);
 
-            // 3. Front Pulleys and Belts
-            const pulleyGroup = new THREE.Group();
-            pulleyGroup.position.set(0, 0, 2.1); // Front of engine
+            // --- Scenery Group ---
+            sceneryGroup = new THREE.Group();
+            scene.add(sceneryGroup);
 
-            // Main Crank Pulley
-            const crankGeo = new THREE.CylinderGeometry(0.4, 0.4, 0.2, 32);
-            const crankPulley = new THREE.Mesh(crankGeo, darkMetalMaterial);
-            crankPulley.rotation.x = Math.PI / 2;
-            crankPulley.position.y = -0.5;
-            pulleyGroup.add(crankPulley);
-
-            // Water Pump Pulley (Higher)
-            const pumpGeo = new THREE.CylinderGeometry(0.3, 0.3, 0.2, 32);
-            const pumpPulley = new THREE.Mesh(pumpGeo, darkMetalMaterial);
-            pumpPulley.rotation.x = Math.PI / 2;
-            pumpPulley.position.y = 0.5;
-            pulleyGroup.add(pumpPulley);
-
-            // Alternator (Side)
-            const altGeo = new THREE.CylinderGeometry(0.2, 0.2, 0.2, 32);
-            const altPulley = new THREE.Mesh(altGeo, headMaterial);
-            altPulley.rotation.x = Math.PI / 2;
-            altPulley.position.set(0.8, 0.8, 0);
-            pulleyGroup.add(altPulley);
-
-            // Fan
-            const fanGroup = new THREE.Group();
-            const fanBladeGeo = new THREE.BoxGeometry(0.2, 2.2, 0.05);
-            const fanBlade1 = new THREE.Mesh(fanBladeGeo, new THREE.MeshStandardMaterial({color: 0xef4444})); // Red fan
-            const fanBlade2 = new THREE.Mesh(fanBladeGeo, new THREE.MeshStandardMaterial({color: 0xef4444}));
-            fanBlade2.rotation.z = Math.PI / 2;
-            fanGroup.add(fanBlade1);
-            fanGroup.add(fanBlade2);
-            fanGroup.position.set(0, 0, 0.3); // In front of pulleys
-            pulleyGroup.add(fanGroup);
-
-            engineGroup.add(pulleyGroup);
-
-            scene.add(engineGroup);
-
-            // --- Floating Particles (Oil/Sparks) ---
-            const particlesGeo = new THREE.BufferGeometry();
-            const particleCount = 400; // Increased count
-            const posArray = new Float32Array(particleCount * 3);
-            for(let i=0; i<particleCount * 3; i++) {
-                posArray[i] = (Math.random() - 0.5) * 20; // Spread out more
-            }
-            particlesGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
-            const particlesMat = new THREE.PointsMaterial({
-                size: 0.04,
-                color: 0xf59e0b,
-                transparent: true,
-                opacity: 0.6,
-                blending: THREE.AdditiveBlending
+            // --- ROAD ---
+            const roadGeo = new THREE.PlaneGeometry(16, 200);
+            const roadMat = new THREE.MeshStandardMaterial({ 
+                color: 0x1f2937, 
+                roughness: 0.8,
+                side: THREE.DoubleSide
             });
-            const particleSystem = new THREE.Points(particlesGeo, particlesMat);
-            scene.add(particleSystem);
+            const road = new THREE.Mesh(roadGeo, roadMat);
+            road.rotation.x = -Math.PI / 2;
+            road.position.z = -50;
+            road.position.y = -0.05;
+            road.receiveShadow = true;
             
-            // Adjust camera to look at engine but offset for text
-            camera.position.z = 7;
-            camera.position.x = 3; 
-            camera.position.y = 1;
-            camera.lookAt(0, 0, 0);
+            const gridHelper = new THREE.GridHelper(200, 50, 0x14b8a6, 0x14b8a6);
+            gridHelper.position.y = 0.01;
+            gridHelper.position.z = -50;
             
-            // Interaction State
+            roadGroup = new THREE.Group();
+            roadGroup.add(road);
+            roadGroup.add(gridHelper);
+            scene.add(roadGroup);
+
+            // Camera setup
+            camera.position.set(4, 2, 6);
+            camera.lookAt(0, 0.5, 0);
+            
+            // Input Listeners
             let mouseX = 0;
             let mouseY = 0;
-            
-            // Event Listeners
-            document.addEventListener('mousemove', (event) => {
-                mouseX = (event.clientX / window.innerWidth) * 2 - 1;
-                mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
+            const raycaster = new THREE.Raycaster();
+            const mouse = new THREE.Vector2();
+
+            window.addEventListener('click', (event) => {
+                if(isGameOver) {
+                    resetGame();
+                    return;
+                }
+                if(gameActive) return;
+                mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+                mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+                raycaster.setFromCamera(mouse, camera);
+                const intersects = raycaster.intersectObjects(carGroup.children, true);
+                if(intersects.length > 0) startGame();
             });
+
+            window.addEventListener('touchstart', (e) => {
+                if(!gameActive) return;
+                const touchX = e.touches[0].clientX;
+                if(touchX < window.innerWidth / 2) keys.ArrowLeft = true;
+                else keys.ArrowRight = true;
+            });
+
+            window.addEventListener('touchend', () => {
+                keys.ArrowLeft = false;
+                keys.ArrowRight = false;
+            });
+
+            document.addEventListener('mousemove', (event) => {
+                if(!gameActive) {
+                    mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+                    mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
+                }
+            });
+
+            window.addEventListener('keydown', (e) => { 
+                keys[e.key] = true; 
+                if(isGameOver && (e.key === 'Enter' || e.code === 'Space')) {
+                    resetGame();
+                }
+            });
+            window.addEventListener('keyup', (e) => { keys[e.key] = false; });
 
             window.addEventListener('resize', () => {
                 camera.aspect = window.innerWidth / window.innerHeight;
                 camera.updateProjectionMatrix();
                 renderer.setSize(window.innerWidth, window.innerHeight);
-                
-                // Responsive adjustment
-                if(window.innerWidth < 768) {
-                    camera.position.x = 0;
-                    camera.position.y = 3.5;
-                    camera.position.z = 6;
-                    camera.lookAt(0, 0, 0);
-                } else {
-                    camera.position.set(3, 1, 7);
-                    camera.lookAt(0, 0, 0);
-                }
+                if(!gameActive) resetCamera();
             });
-
-            // Initial responsive check
-            if(window.innerWidth < 768) {
-                camera.position.set(0, 3.5, 6);
-                camera.lookAt(0, 0, 0);
-            }
 
             // Animation Loop
             const clock = new THREE.Clock();
-
             const animate = () => {
                 requestAnimationFrame(animate);
-                
                 const time = clock.getElapsedTime();
 
-                // Rotate entire engine slowly for display
-                engineGroup.rotation.y = Math.sin(time * 0.15) * 0.2 + 0.6; // Slower, more deliberate sway
-                engineGroup.rotation.x = Math.cos(time * 0.2) * 0.05 + 0.1;
+                if(!gameActive) {
+                    carGroup.position.set(0, Math.sin(time * 1.5) * 0.05, 0); 
+                    carGroup.rotation.y = -Math.PI / 6 + Math.sin(time * 0.5) * 0.1 + (mouseX * 0.2); 
+                    carGroup.rotation.x = Math.sin(time * 2) * 0.01 + (mouseY * 0.1); 
+                    wheels.forEach(w => w.rotation.x += 0.05);
+                    animateShapes(time);
+                } else if (gameActive && !isGameOver) {
+                    carGroup.position.z -= gameConfig.currentSpeed;
+                    
+                    if(keys.a || keys.ArrowLeft) {
+                        carGroup.position.x -= gameConfig.steerSpeed;
+                        carGroup.rotation.z = 0.1;
+                        carGroup.rotation.y = 0.1;
+                    } else if(keys.d || keys.ArrowRight) {
+                        carGroup.position.x += gameConfig.steerSpeed;
+                        carGroup.rotation.z = -0.1;
+                        carGroup.rotation.y = -0.1;
+                    } else {
+                        carGroup.rotation.z *= 0.8;
+                        carGroup.rotation.y *= 0.8;
+                    }
+                    
+                    if(carGroup.position.x > gameConfig.maxX) carGroup.position.x = gameConfig.maxX;
+                    if(carGroup.position.x < -gameConfig.maxX) carGroup.position.x = -gameConfig.maxX;
 
-                // Mouse interaction parallax (smoother)
-                engineGroup.rotation.y += mouseX * 0.15;
-                engineGroup.rotation.x += mouseY * 0.1;
+                    const gridSnap = Math.floor(carGroup.position.z / 10) * 10;
+                    roadGroup.position.z = gridSnap + 50;
 
-                // Spin Pulleys and Fan (The engine is running!)
-                crankPulley.rotation.z -= 0.1;
-                pumpPulley.rotation.z -= 0.15;
-                altPulley.rotation.z -= 0.2;
-                fanGroup.rotation.z -= 0.4; 
+                    spawnWorldElements();
+                    updateCollidables();
 
-                // Float particles
-                particleSystem.rotation.y = time * 0.03;
+                    camera.position.z = carGroup.position.z + 8;
+                    camera.position.y = 4;
+                    camera.position.x = carGroup.position.x * 0.3; 
+                    camera.lookAt(carGroup.position.x, 0, carGroup.position.z - 10);
 
+                    wheels.forEach(w => w.rotation.x += 0.5);
+                    // gameConfig.currentSpeed += 0.0001; 
+                    document.getElementById('speed-meter').innerText = Math.floor(gameConfig.currentSpeed * 200);
+                }
                 renderer.render(scene, camera);
             };
-
             animate();
         };
 
-        // Initialize 3D Scene
-        init3D();
+        // --- SCENERY FUNCTIONS ---
 
-        // --- Intersection Observer for Scroll Animations ---
-        const observerOptions = {
-            root: null,
-            rootMargin: '0px',
-            threshold: 0.1
+        function createTree(x, z) {
+            const trunkGeo = new THREE.CylinderGeometry(0.2, 0.4, 1, 8);
+            const trunkMat = new THREE.MeshToonMaterial({ color: 0x4B3621 });
+            const leavesGeo = new THREE.ConeGeometry(1.5, 3, 8);
+            const leavesMat = new THREE.MeshToonMaterial({ color: 0x14532d }); // Dark Green
+
+            const trunk = new THREE.Mesh(trunkGeo, trunkMat);
+            trunk.position.y = 0.5;
+            
+            const leaves = new THREE.Mesh(leavesGeo, leavesMat);
+            leaves.position.y = 2.5;
+
+            const group = new THREE.Group();
+            group.add(trunk);
+            group.add(leaves);
+            group.position.set(x, 0, z);
+            
+            sceneryGroup.add(group);
+            sceneryCollidables.push(group);
+        }
+
+        function createBuilding(x, z) {
+            const height = 5 + Math.random() * 10;
+            const geo = new THREE.BoxGeometry(3, height, 3);
+            const mat = new THREE.MeshToonMaterial({ color: 0x1f2937, opacity: 0.9, transparent: true });
+            
+            const mesh = new THREE.Mesh(geo, mat);
+            mesh.position.set(x, height/2, z);
+            
+            // Neon strips
+            const neonGeo = new THREE.BoxGeometry(3.1, 0.2, 3.1);
+            const neonMat = new THREE.MeshBasicMaterial({ color: Math.random() > 0.5 ? 0x14b8a6 : 0xef4444 });
+            const neon = new THREE.Mesh(neonGeo, neonMat);
+            neon.position.y = height * 0.8;
+            mesh.add(neon);
+
+            sceneryGroup.add(mesh);
+            sceneryCollidables.push(mesh);
+        }
+
+        function createMountain(x, z) {
+            const height = 15 + Math.random() * 10;
+            const geo = new THREE.ConeGeometry(8, height, 4);
+            const mat = new THREE.MeshToonMaterial({ color: 0x374151 }); // Gray
+            const mesh = new THREE.Mesh(geo, mat);
+            mesh.position.set(x, height/3, z);
+            sceneryGroup.add(mesh);
+            sceneryCollidables.push(mesh);
+        }
+
+        function createStreetLight(x, z) {
+            const poleGeo = new THREE.CylinderGeometry(0.1, 0.1, 5);
+            const poleMat = new THREE.MeshStandardMaterial({ color: 0x333333 });
+            const pole = new THREE.Mesh(poleGeo, poleMat);
+            pole.position.y = 2.5;
+
+            const armGeo = new THREE.BoxGeometry(1.5, 0.1, 0.1);
+            const arm = new THREE.Mesh(armGeo, poleMat);
+            arm.position.set(x > 0 ? -0.7 : 0.7, 5, 0);
+
+            const lightGeo = new THREE.BoxGeometry(0.3, 0.1, 0.5);
+            const lightMat = new THREE.MeshBasicMaterial({ color: 0xffaa00 });
+            const light = new THREE.Mesh(lightGeo, lightMat);
+            light.position.set(x > 0 ? -1.4 : 1.4, 4.9, 0);
+
+            const group = new THREE.Group();
+            group.add(pole);
+            group.add(arm);
+            group.add(light);
+            group.position.set(x, 0, z);
+
+            sceneryGroup.add(group);
+            sceneryCollidables.push(group);
+        }
+
+        // --- CREATION FUNCTIONS (Existing) ---
+        function createCar() {
+             carGroup = new THREE.Group();
+            
+            // Realism Materials
+            const paintMat = new THREE.MeshStandardMaterial({ 
+                color: 0x003366, // Deep Metallic Blue (Marina Bay Blue ish)
+                metalness: 0.6,
+                roughness: 0.4
+            });
+            const carbonMat = new THREE.MeshStandardMaterial({ 
+                color: 0x111111, 
+                metalness: 0.3, 
+                roughness: 0.8 
+            });
+            const chromeMat = new THREE.MeshStandardMaterial({ 
+                color: 0xffffff, 
+                metalness: 0.9, 
+                roughness: 0.1 
+            });
+            const glassMat = new THREE.MeshPhysicalMaterial({ 
+                color: 0x111111, 
+                metalness: 0.9, 
+                roughness: 0.0, 
+                transparent: true, 
+                opacity: 0.7 
+            });
+            const rubberMat = new THREE.MeshStandardMaterial({ 
+                color: 0x111111, 
+                roughness: 0.9 
+            });
+            const lightMat = new THREE.MeshStandardMaterial({ 
+                color: 0xffffff, 
+                emissive: 0xffffff, 
+                emissiveIntensity: 5 
+            });
+             const tailLightMat = new THREE.MeshStandardMaterial({ 
+                color: 0xff0000, 
+                emissive: 0xff0000, 
+                emissiveIntensity: 2 
+            });
+
+            // --- CAR BODY SCULPTING ---
+            
+            // 1. Lower Chassis (Main Block)
+            const chassisGeo = new THREE.BoxGeometry(2.1, 0.5, 4.8);
+            const chassis = new THREE.Mesh(chassisGeo, paintMat);
+            chassis.position.y = 0.5;
+            chassis.castShadow = true;
+            carGroup.add(chassis);
+
+            // 2. Cabin (Greenhouse)
+            const cabinGeo = new THREE.BoxGeometry(1.9, 0.6, 2.2);
+            const cabin = new THREE.Mesh(cabinGeo, glassMat);
+            cabin.position.set(0, 1.0, -0.3); 
+            carGroup.add(cabin);
+            
+            // Roof (Carbon)
+            const roofGeo = new THREE.BoxGeometry(1.92, 0.05, 2.25);
+            const roof = new THREE.Mesh(roofGeo, carbonMat);
+            roof.position.set(0, 1.32, -0.3);
+            carGroup.add(roof);
+
+            // 3. Hood (Sloped)
+            const hoodGeo = new THREE.BoxGeometry(1.9, 0.1, 1.4);
+            const hood = new THREE.Mesh(hoodGeo, paintMat);
+            hood.position.set(0, 0.76, 1.5); // Front
+            carGroup.add(hood);
+
+            // 4. Trunk
+            const trunkGeo = new THREE.BoxGeometry(1.9, 0.1, 0.8);
+            const trunk = new THREE.Mesh(trunkGeo, paintMat);
+            trunk.position.set(0, 0.76, -2.0); // Back
+            carGroup.add(trunk);
+
+            // 5. Bumpers
+            // Front Bumper (Aggressive)
+            const fBumperGeo = new THREE.BoxGeometry(2.1, 0.4, 0.2);
+            const fBumper = new THREE.Mesh(fBumperGeo, paintMat);
+            fBumper.position.set(0, 0.4, 2.45);
+            carGroup.add(fBumper);
+            
+            // Front Splitter (Carbon)
+            const splitterGeo = new THREE.BoxGeometry(2.15, 0.05, 0.3);
+            const splitter = new THREE.Mesh(splitterGeo, carbonMat);
+            splitter.position.set(0, 0.15, 2.5);
+            carGroup.add(splitter);
+
+            // Rear Bumper
+            const rBumperGeo = new THREE.BoxGeometry(2.1, 0.4, 0.2);
+            const rBumper = new THREE.Mesh(rBumperGeo, paintMat);
+            rBumper.position.set(0, 0.4, -2.45);
+            carGroup.add(rBumper);
+            
+            // Diffuser
+            const diffuserGeo = new THREE.BoxGeometry(1.8, 0.15, 0.1);
+            const diffuser = new THREE.Mesh(diffuserGeo, carbonMat);
+            diffuser.position.set(0, 0.2, -2.55);
+            carGroup.add(diffuser);
+
+            // 6. Wheels (More detailed)
+            const wheelGeo = new THREE.CylinderGeometry(0.42, 0.42, 0.28, 32);
+            const rimGeo = new THREE.CylinderGeometry(0.28, 0.28, 0.29, 16); 
+            const wheelPositions = [
+                { x: 1.05, z: 1.6 },   // Front Left
+                { x: -1.05, z: 1.6 },  // Front Right
+                { x: 1.05, z: -1.6 },  // Rear Left
+                { x: -1.05, z: -1.6 }  // Rear Right
+            ];
+
+            wheelPositions.forEach(pos => {
+                const wG = new THREE.Group();
+                const tire = new THREE.Mesh(wheelGeo, rubberMat); 
+                tire.rotation.z = Math.PI/2;
+                tire.castShadow = true;
+                
+                const rim = new THREE.Mesh(rimGeo, carbonMat); // Black rims
+                rim.rotation.z = Math.PI/2;
+                
+                // Add a center cap
+                const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.30, 8), chromeMat);
+                cap.rotation.z = Math.PI/2;
+
+                wG.add(tire);
+                wG.add(rim);
+                wG.add(cap);
+                wG.position.set(pos.x, 0.42, pos.z);
+                carGroup.add(wG);
+                wheels.push(wG);
+            });
+
+            // 7. Details
+            
+            // Kidney Grilles (Black)
+            const grilleGeo = new THREE.BoxGeometry(0.4, 0.3, 0.05);
+            const grilleL = new THREE.Mesh(grilleGeo, carbonMat); grilleL.position.set(0.22, 0.6, 2.56); carGroup.add(grilleL);
+            const grilleR = new THREE.Mesh(grilleGeo, carbonMat); grilleR.position.set(-0.22, 0.6, 2.56); carGroup.add(grilleR);
+
+            // Headlights (Angel Eyes glow)
+            const hlGeo = new THREE.BoxGeometry(0.5, 0.15, 0.1);
+            const hlL = new THREE.Mesh(hlGeo, lightMat); hlL.position.set(0.8, 0.65, 2.5); carGroup.add(hlL);
+            const hlR = new THREE.Mesh(hlGeo, lightMat); hlR.position.set(-0.8, 0.65, 2.5); carGroup.add(hlR);
+
+            // Tail Lights
+            const tlGeo = new THREE.BoxGeometry(0.6, 0.15, 0.1);
+            const tlL = new THREE.Mesh(tlGeo, tailLightMat); tlL.position.set(0.8, 0.65, -2.5); carGroup.add(tlL);
+            const tlR = new THREE.Mesh(tlGeo, tailLightMat); tlR.position.set(-0.8, 0.65, -2.5); carGroup.add(tlR);
+
+            // Quad Exhausts
+            const exGeo = new THREE.CylinderGeometry(0.06, 0.06, 0.2, 16);
+            const ex1 = new THREE.Mesh(exGeo, chromeMat); ex1.rotation.x = Math.PI/2; ex1.position.set(0.5, 0.25, -2.6);
+            const ex2 = new THREE.Mesh(exGeo, chromeMat); ex2.rotation.x = Math.PI/2; ex2.position.set(0.7, 0.25, -2.6);
+            const ex3 = new THREE.Mesh(exGeo, chromeMat); ex3.rotation.x = Math.PI/2; ex3.position.set(-0.5, 0.25, -2.6);
+            const ex4 = new THREE.Mesh(exGeo, chromeMat); ex4.rotation.x = Math.PI/2; ex4.position.set(-0.7, 0.25, -2.6);
+            carGroup.add(ex1); carGroup.add(ex2); carGroup.add(ex3); carGroup.add(ex4);
+
+            // Spoiler (Lip)
+            const spoilerGeo = new THREE.BoxGeometry(1.9, 0.05, 0.2);
+            const spoiler = new THREE.Mesh(spoilerGeo, carbonMat); 
+            spoiler.position.set(0, 0.82, -2.4); 
+            spoiler.rotation.x = 0.1;
+            carGroup.add(spoiler);
+            
+            scene.add(carGroup);
+        }
+
+        function animateShapes(time) {
+            shapesGroup.children.forEach((child, i) => {
+                child.rotation.x += 0.01;
+                child.rotation.y += 0.01;
+                child.position.y += Math.sin(time + i) * 0.01;
+            });
+        }
+
+        function spawnWorldElements() {
+            if (carGroup.position.z < lastSpawnZ + 10) {
+                lastSpawnZ -= 20;
+                
+                // --- Game Objects (Road) ---
+                const lane = (Math.floor(Math.random() * 3) - 1) * 3;
+                const type = Math.random() > 0.3 ? 'obstacle' : 'coin';
+
+                if(type === 'obstacle') createObstacle(lane, lastSpawnZ);
+                else createCoin(lane, lastSpawnZ);
+                
+                if(Math.random() > 0.5) {
+                    const lane2 = (Math.floor(Math.random() * 3) - 1) * 3;
+                    if(lane2 !== lane) createCoin(lane2, lastSpawnZ);
+                }
+
+                // --- Dense Scenery Generation ---
+                
+                // 1. Background Mountains (Far Horizon)
+                // Spawn large mountains further out to create a "valley" feel
+                createMountain(-60 - Math.random() * 40, lastSpawnZ);
+                createMountain(60 + Math.random() * 40, lastSpawnZ);
+
+                // 2. Mid-ground Fillers (Trees & Buildings)
+                // Loop to spawn multiple items per segment for density
+                for(let i = 0; i < 4; i++) {
+                    const zOffset = (Math.random() * 20) - 10;
+                    
+                    // Left Side (-15 to -50)
+                    const leftX = -15 - Math.random() * 35;
+                    const leftType = Math.random();
+                    if(leftType < 0.6) createTree(leftX, lastSpawnZ + zOffset);
+                    else if(leftType < 0.8) createBuilding(leftX, lastSpawnZ + zOffset);
+                    else createMountain(leftX, lastSpawnZ + zOffset); // Occasional closer mountain
+
+                    // Right Side (15 to 50)
+                    const rightX = 15 + Math.random() * 35;
+                    const rightType = Math.random();
+                    if(rightType < 0.6) createTree(rightX, lastSpawnZ + zOffset);
+                    else if(rightType < 0.8) createBuilding(rightX, lastSpawnZ + zOffset);
+                    else createMountain(rightX, lastSpawnZ + zOffset);
+                }
+
+                // 3. Roadside Details (Street Lights)
+                createStreetLight(-9, lastSpawnZ);
+                createStreetLight(9, lastSpawnZ);
+            }
+        }
+
+        function spawnSceneryItem(x, z) {
+            // Deprecated in favor of the denser logic in spawnWorldElements
+            const rand = Math.random();
+            if(rand < 0.3) createTree(x, z);
+            else if(rand < 0.6) createBuilding(x, z);
+            else if(rand < 0.8) createMountain(x, z);
+            else createStreetLight(x, z);
+        }
+
+        function createObstacle(x, z) {
+            const geo = new THREE.BoxGeometry(2, 2, 2);
+            const mat = new THREE.MeshToonMaterial({ color: 0xef4444 });
+            const mesh = new THREE.Mesh(geo, mat);
+            mesh.position.set(x, 1, z);
+            mesh.castShadow = true;
+            scene.add(mesh);
+            collidables.push({ mesh: mesh, type: 'obstacle', active: true });
+        }
+
+        function createCoin(x, z) {
+            const geo = new THREE.TorusGeometry(0.8, 0.2, 8, 16);
+            const mat = new THREE.MeshToonMaterial({ color: 0xfacc15 });
+            const mesh = new THREE.Mesh(geo, mat);
+            mesh.position.set(x, 1.5, z);
+            mesh.castShadow = true;
+            scene.add(mesh);
+            collidables.push({ mesh: mesh, type: 'coin', active: true });
+        }
+
+        function updateCollidables() {
+            const carPos = carGroup.position;
+            
+            // Collisions
+            collidables.forEach((obj, index) => {
+                if(!obj.active) return;
+                if(obj.type === 'coin') obj.mesh.rotation.y += 0.1;
+                
+                const dist = obj.mesh.position.distanceTo(carPos);
+                if(dist < 2.5) {
+                    if(obj.type === 'obstacle') triggerGameOver();
+                    else if (obj.type === 'coin') collectCoin(obj);
+                }
+
+                if(obj.mesh.position.z > carPos.z + 10) {
+                    scene.remove(obj.mesh);
+                    obj.active = false;
+                }
+            });
+
+            // Scenery Cleanup
+            sceneryCollidables.forEach((mesh, index) => {
+                if(mesh.position.z > carPos.z + 20) {
+                    sceneryGroup.remove(mesh);
+                    // ideally remove from array too, simplified for demo
+                }
+            });
+        }
+
+        function collectCoin(obj) {
+            obj.active = false;
+            scene.remove(obj.mesh);
+            score += 100;
+            document.getElementById('score-display').innerText = score;
+            // Increase speed by 1km/h per 100 points (0.005 * 200 = 1 km/h)
+            gameConfig.currentSpeed += 0.005;
+        }
+
+        function triggerGameOver() {
+            isGameOver = true;
+            
+            // Play Crash Sound
+            const sound = document.getElementById('crash-sound');
+            if(sound) {
+                sound.currentTime = 0;
+                sound.play().catch(e => console.log("Audio playback failed:", e));
+            }
+
+            document.getElementById('game-over-screen').style.display = 'flex';
+            document.getElementById('final-score').innerText = score;
+            document.getElementById('game-ui').style.display = 'none';
+        }
+
+        function resetCamera() {
+            if(window.innerWidth < 768) {
+                camera.position.set(0, 3, 7);
+                camera.lookAt(0, 0, 0);
+            } else {
+                camera.position.set(4, 2, 6);
+                camera.lookAt(0, 0.5, 0);
+            }
+        }
+
+        function startGame() {
+            gameActive = true;
+            isGameOver = false;
+            score = 0;
+            gameConfig.currentSpeed = gameConfig.baseSpeed;
+            document.getElementById('score-display').innerText = '0';
+            
+            // UI
+            document.getElementById('content').style.opacity = '0';
+            document.getElementById('content').style.pointerEvents = 'none';
+            document.getElementById('game-ui').style.display = 'block';
+            document.getElementById('game-over-screen').style.display = 'none';
+            
+            // Tutorial Auto-Hide
+            const tutText = document.getElementById('tutorial-text');
+            tutText.style.opacity = '1';
+            clearTimeout(tutorialTimeout);
+            tutorialTimeout = setTimeout(() => {
+                tutText.style.opacity = '0';
+            }, 5000);
+
+            // Reset World
+            carGroup.position.set(0, 0, 0);
+            carGroup.rotation.set(0, Math.PI, 0); 
+            lastSpawnZ = -20;
+            
+            collidables.forEach(c => scene.remove(c.mesh));
+            collidables = [];
+            
+            // Clear Scenery
+            while(sceneryGroup.children.length > 0){ 
+                sceneryGroup.remove(sceneryGroup.children[0]); 
+            }
+            sceneryCollidables = [];
+
+            shapesGroup.visible = false;
+        }
+
+        window.resetGame = function() {
+            startGame();
         };
 
-        const observer = new IntersectionObserver((entries, observer) => {
+        window.stopGame = function() {
+            gameActive = false;
+            isGameOver = false;
+            document.getElementById('content').style.opacity = '1';
+            document.getElementById('game-ui').style.display = 'none';
+            document.getElementById('game-over-screen').style.display = 'none';
+            
+            collidables.forEach(c => scene.remove(c.mesh));
+            collidables = [];
+            while(sceneryGroup.children.length > 0){ 
+                sceneryGroup.remove(sceneryGroup.children[0]); 
+            }
+            sceneryCollidables = [];
+            
+            shapesGroup.visible = true;
+            carGroup.position.set(0, 0, 0);
+            resetCamera();
+        };
+
+        init3D();
+
+        const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
                     entry.target.classList.add('is-visible');
-                    observer.unobserve(entry.target); // Only animate once
                 }
             });
-        }, observerOptions);
+        }, { threshold: 0.1 });
 
         document.querySelectorAll('.fade-in-section').forEach(section => {
             observer.observe(section);
