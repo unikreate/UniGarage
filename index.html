@@ -320,6 +320,7 @@
     <!-- Audio Assets -->
     <audio id="crash-sound" src="fahhhhh.mp3" preload="auto"></audio>
     <audio id="score-sound" src="dragon-studio-wow-423653.mp3" preload="auto"></audio>
+    <audio id="bg-music" src="y2mate.com - Main Nikla Gaddi Leke  Gadar 2  Sunny Deol Ameesha P Utkarsh Mithoon Udit N Aditya N Uttam S.mp3" loop preload="auto"></audio>
 
     <!-- Main Content Overlay -->
     <div id="content">
@@ -1077,6 +1078,7 @@
             const sound = document.getElementById('score-sound');
             if(sound) {
                 sound.currentTime = 0;
+                sound.volume = 1.0;
                 sound.play().catch(e => console.log("Audio playback failed:", e));
             }
 
@@ -1087,6 +1089,12 @@
         function triggerGameOver() {
             isGameOver = true;
             
+            // Stop Background Music
+            const bgMusic = document.getElementById('bg-music');
+            if(bgMusic) {
+                bgMusic.pause();
+            }
+
             // Play Crash Sound
             const sound = document.getElementById('crash-sound');
             if(sound) {
@@ -1122,6 +1130,14 @@
             document.getElementById('game-ui').style.display = 'block';
             document.getElementById('game-over-screen').style.display = 'none';
             
+            // Start Background Music
+            const bgMusic = document.getElementById('bg-music');
+            if(bgMusic) {
+                bgMusic.volume = 0.8; // 80% Volume
+                bgMusic.currentTime = 0;
+                bgMusic.play().catch(e => console.log("Music playback failed:", e));
+            }
+
             // Tutorial Auto-Hide
             const tutText = document.getElementById('tutorial-text');
             tutText.style.opacity = '1';
@@ -1158,6 +1174,13 @@
             document.getElementById('game-ui').style.display = 'none';
             document.getElementById('game-over-screen').style.display = 'none';
             
+            // Stop Music
+            const bgMusic = document.getElementById('bg-music');
+            if(bgMusic) {
+                bgMusic.pause();
+                bgMusic.currentTime = 0;
+            }
+
             collidables.forEach(c => scene.remove(c.mesh));
             collidables = [];
             while(sceneryGroup.children.length > 0){ 
