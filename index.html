@@ -5,13 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Apex M-Runner | Endless Arcade</title>
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Exo+2:ital,wght@0,300;0,500;0,700;0,900;1,300&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
     
-    <!-- Three.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
     <style>
@@ -34,6 +31,689 @@
             margin: 0;
             user-select: none;
             -webkit-user-select: none;
+            touch-action: none;
+        }
+
+        #canvas-container {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100vh;
+            z-index: 0;
+        }
+
+        /* --- UI LAYOUTS --- */
+        #main-menu {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+            background: radial-gradient(circle, rgba(0,0,0,0) 0%, rgba(0,0,0,0.8) 100%);
+            transition: opacity 0.5s ease;
+        }
+
+        #game-ui, #game-over-screen {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+        }
+
+        #game-ui { z-index: 30; pointer-events: none; }
+        #game-over-screen { background: rgba(0,0,0,0.95); z-index: 40; flex-direction: column; align-items: center; justify-content: center; }
+
+        h1 {
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 900; font-style: italic; text-transform: uppercase;
+            text-shadow: 4px 4px 0px var(--primary);
+            text-align: center;
+            line-height: 0.9;
+        }
+
+        .btn-cartoon {
+            position: relative;
+            background: var(--primary); color: #000; border: 2px solid #fff;
+            font-family: 'Rajdhani', sans-serif; font-weight: 800; font-size: 1.5rem;
+            text-transform: uppercase; letter-spacing: 2px;
+            padding: 1rem 3rem; transform: skew(-10deg);
+            box-shadow: 6px 6px 0px #000; transition: all 0.2s ease;
+            cursor: pointer; pointer-events: auto;
+            white-space: nowrap;
+        }
+        .btn-cartoon:hover { background: var(--accent); color: #fff; transform: skew(-10deg) translate(-2px, -2px) scale(1.05); box-shadow: 8px 8px 0px #000; }
+        .btn-cartoon:active { transform: skew(-10deg) translate(2px, 2px); box-shadow: 2px 2px 0px #000; }
+        .btn-cartoon:disabled { background: #555; color: #888; border-color: #666; cursor: not-allowed; box-shadow: none; transform: skew(-10deg); }
+
+        .car-selector {
+            display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;
+            background: rgba(0,0,0,0.6); padding: 1rem; border-radius: 12px; border: 1px solid #333;
+        }
+        
+        .arrow-btn {
+            background: transparent; border: 2px solid white; color: white;
+            width: 40px; height: 40px; border-radius: 50%;
+            font-weight: bold; font-size: 1.2rem; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: 0.2s; pointer-events: auto;
+        }
+        .arrow-btn:hover { background: white; color: black; }
+
+        .car-info { text-align: center; min-width: 180px; }
+        .car-name { font-size: 1.5rem; font-weight: bold; color: var(--primary); text-transform: uppercase; }
+        .car-status { font-size: 0.8rem; letter-spacing: 1px; margin-top: 0.2rem; }
+        .status-locked { color: var(--accent); }
+        .status-unlocked { color: #4ade80; }
+
+        .hud-panel {
+            position: absolute; background: rgba(0,0,0,0.8); border: 2px solid var(--primary);
+            padding: 0.5rem 1rem; border-radius: 8px; font-family: 'Rajdhani', sans-serif;
+            text-transform: uppercase; box-shadow: 0 0 15px rgba(20, 184, 166, 0.3);
+        }
+        .score-box { top: 20px; right: 20px; text-align: right; }
+        .high-score-box { top: 20px; left: 20px; text-align: left; border-color: #facc15; }
+        .speed-box { bottom: 30px; right: 20px; text-align: right; }
+
+        /* --- MOBILE CONTROLS --- */
+        .mobile-controls {
+            position: absolute; bottom: 20px; left: 0; width: 100%;
+            display: flex; justify-content: space-between; padding: 0 20px;
+            pointer-events: none; z-index: 50;
+        }
+        
+        .control-btn {
+            width: 80px; height: 80px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            pointer-events: auto; backdrop-filter: blur(4px);
+            transition: transform 0.1s, background 0.1s;
+            touch-action: manipulation;
+        }
+        .control-btn svg { width: 40px; height: 40px; fill: white; opacity: 0.8; }
+        .control-btn:active { background: rgba(20, 184, 166, 0.6); transform: scale(0.9); border-color: var(--primary); }
+        
+        /* Hidden touch zones for full screen tapping if needed, but buttons are safer */
+        #touch-left, #touch-right { position: absolute; top: 0; height: 100%; width: 50%; z-index: 25; }
+        #touch-left { left: 0; } #touch-right { right: 0; }
+    </style>
+</head>
+<body>
+
+    <div id="canvas-container"></div>
+
+    <div id="main-menu">
+        <h1 class="text-6xl md:text-9xl mb-4 text-white">APEX <span class="text-red-500 block md:inline">RUNNER</span></h1>
+        
+        <div class="mb-6 text-center">
+            <div class="text-yellow-400 font-bold tracking-widest text-sm md:text-lg">HIGH SCORE</div>
+            <div class="text-4xl font-black text-white" id="menu-high-score">0</div>
+        </div>
+
+        <div class="car-selector">
+            <button class="arrow-btn" onclick="changeCar(-1)">&#8592;</button>
+            <div class="car-info">
+                <div id="ui-car-name" class="car-name">The M-Series</div>
+                <div id="ui-car-status" class="car-status status-unlocked">UNLOCKED</div>
+            </div>
+            <button class="arrow-btn" onclick="changeCar(1)">&#8594;</button>
+        </div>
+
+        <button id="start-btn" class="btn-cartoon mb-8" onclick="startGame()">START ENGINE</button>
+        
+        <div class="flex gap-4 md:gap-8 text-sm text-gray-400 font-mono">
+            <div class="flex flex-col items-center"><span class="text-teal-400 font-bold text-lg">CONTROLS</span><span>A / D or ARROWS</span></div>
+        </div>
+    </div>
+
+    <div id="game-ui">
+        <div class="hud-panel high-score-box">
+            <div class="text-xs text-gray-400">BEST</div>
+            <div class="text-xl font-bold text-yellow-400" id="hud-high-score">0</div>
+        </div>
+        <div class="hud-panel score-box">
+            <div class="text-sm text-gray-400">SCORE</div>
+            <div class="text-4xl font-bold text-white" id="score-display">0</div>
+        </div>
+        <div class="hud-panel speed-box">
+            <div class="text-sm text-gray-400">SPEED</div>
+            <div class="text-3xl font-bold text-teal-400"><span id="speed-meter">0</span> <span class="text-sm">KM/H</span></div>
+        </div>
+        
+        <div class="mobile-controls md:hidden">
+            <button id="btn-left" class="control-btn" aria-label="Steer Left">
+                <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+            </button>
+            <button id="btn-right" class="control-btn" aria-label="Steer Right">
+                <svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+            </button>
+        </div>
+        
+        <div id="touch-left" class="md:hidden"></div>
+        <div id="touch-right" class="md:hidden"></div>
+    </div>
+
+    <div id="game-over-screen">
+        <h2 class="text-6xl md:text-8xl font-black italic text-red-500 mb-2">CRASHED!</h2>
+        <div class="text-3xl text-white mb-8 font-mono">SCORE: <span id="final-score" class="text-yellow-400">0</span></div>
+        <button class="btn-cartoon" onclick="resetGame()">PLAY AGAIN</button>
+        <button class="text-gray-400 hover:text-white underline mt-8 cursor-pointer z-50 pointer-events-auto" onclick="stopGame()">GARAGE</button>
+    </div>
+
+    <audio id="fire-hit-sound" src="makabhosda_aag.mp3" preload="auto"></audio>
+    <audio id="score-sound" src="anime-ahh.mp3" preload="auto"></audio>
+    <audio id="crash-sound" src="fahhhhh.mp3" preload="auto"></audio>
+    <audio id="bg-music" src="11111111.mp3" loop preload="auto"></audio>
+
+    <script>
+        // --- CONFIG & STATE ---
+        const CARS = [
+            { id: 'm_series', name: 'The M-Series', color: 0x003366, unlockScore: 0, type: 'sedan' },
+            { id: 'vortex', name: 'The Vortex', color: 0xd90429, unlockScore: 1000, type: 'sport' },
+            { id: 'titan', name: 'The Titan', color: 0x2d6a4f, unlockScore: 2500, type: 'suv' },
+            { id: 'cyber', name: 'The Cyber', color: 0xffd700, unlockScore: 5000, type: 'hyper' }
+        ];
+
+        let state = {
+            gameActive: false,
+            isGameOver: false,
+            score: 0,
+            highScore: parseInt(localStorage.getItem('apex_highscore')) || 0,
+            speed: 0.375,
+            selectedCarIndex: 0,
+            lastSpawnZ: -20
+        };
+
+        let scene, camera, renderer, carGroup, roadGroup, shapesGroup, sceneryGroup;
+        let collidables = []; // Objects to check collision against
+        let sceneryCollidables = []; // Objects purely for decoration/cleanup
+        let wheels = [];
+        const keys = { a: false, d: false, ArrowLeft: false, ArrowRight: false };
+
+        // --- INIT ---
+        function init() {
+            const container = document.getElementById('canvas-container');
+            scene = new THREE.Scene();
+            scene.fog = new THREE.Fog(0x111827, 10, 80);
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+            
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.BasicShadowMap;
+            container.appendChild(renderer.domElement);
+
+            // Lights
+            scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+            const dl = new THREE.DirectionalLight(0xffffff, 1.0);
+            dl.position.set(10, 30, 10);
+            dl.castShadow = true;
+            dl.shadow.mapSize.set(512, 512); 
+            scene.add(dl);
+            
+            // Groups
+            shapesGroup = new THREE.Group(); scene.add(shapesGroup);
+            sceneryGroup = new THREE.Group(); scene.add(sceneryGroup);
+            roadGroup = new THREE.Group(); scene.add(roadGroup);
+            
+            createRoad();
+            createBackgroundShapes();
+            loadCar(state.selectedCarIndex);
+            updateUI();
+
+            camera.position.set(4, 2, 6);
+            camera.lookAt(0, 0.5, 0);
+
+            const clock = new THREE.Clock();
+            const animate = () => {
+                requestAnimationFrame(animate);
+                const time = clock.getElapsedTime();
+                
+                if(!state.gameActive) {
+                    if(carGroup) {
+                        carGroup.position.set(0, Math.sin(time*1.5)*0.05, 0);
+                        carGroup.rotation.y = -Math.PI/6 + Math.sin(time*0.5)*0.1;
+                    }
+                    shapesGroup.rotation.y += 0.002;
+                } else if(!state.isGameOver) {
+                    updatePhysics(time);
+                }
+                renderer.render(scene, camera);
+            };
+            animate();
+        }
+
+        // --- CAR BUILDER ---
+        function loadCar(index) {
+            if(carGroup) scene.remove(carGroup);
+            wheels = [];
+            const config = CARS[index];
+            carGroup = buildCarModel(config);
+            scene.add(carGroup);
+        }
+
+        function buildCarModel(config) {
+            const group = new THREE.Group();
+            const matBody = new THREE.MeshStandardMaterial({ color: config.color, metalness: 0.6, roughness: 0.4 });
+            const matDark = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.8 });
+            const matGlass = new THREE.MeshStandardMaterial({ color: 0x000000, metalness: 0.9, roughness: 0.1 });
+            const matLightWhite = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 2 });
+            const matLightRed = new THREE.MeshStandardMaterial({ color: 0xff0000, emissive: 0xff0000, emissiveIntensity: 2 });
+
+            let wheelY = 0.4;
+            
+            // Car logic: Front is -Z, Back is +Z
+            if (config.type === 'sedan') {
+                const chassis = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.5, 4.8), matBody); 
+                chassis.position.y = 0.5; group.add(chassis);
+                const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.9, 0.6, 2.2), matGlass); 
+                cabin.position.set(0, 1.0, 0.3); group.add(cabin);
+                const hood = new THREE.Mesh(new THREE.BoxGeometry(1.9, 0.1, 1.5), matBody); 
+                hood.position.set(0, 0.76, -1.5); group.add(hood);
+                const trunk = new THREE.Mesh(new THREE.BoxGeometry(1.9, 0.1, 1.0), matBody); 
+                trunk.position.set(0, 0.76, 1.9); group.add(trunk);
+                addLights(group, 2.1, 2.45, 0.6, matLightWhite, matLightRed);
+
+            } else if (config.type === 'sport') {
+                wheelY = 0.35;
+                const chassis = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.4, 4.8), matBody); 
+                chassis.position.y = 0.4; group.add(chassis);
+                const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.45, 1.8), matGlass); 
+                cabin.position.set(0, 0.8, 0.5); group.add(cabin);
+                const hood = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.1, 1.8), matBody); 
+                hood.position.set(0, 0.6, -1.3); group.add(hood);
+                const spoiler = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.05, 0.5), matDark); 
+                spoiler.position.set(0, 0.7, 2.2); group.add(spoiler);
+                addLights(group, 2.2, 2.4, 0.5, matLightWhite, matLightRed);
+
+            } else if (config.type === 'suv') {
+                wheelY = 0.55;
+                const chassis = new THREE.Mesh(new THREE.BoxGeometry(2.3, 0.8, 5.0), matBody); 
+                chassis.position.y = 0.7; group.add(chassis);
+                const cabin = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.7, 3.0), matGlass); 
+                cabin.position.set(0, 1.4, 0.2); group.add(cabin);
+                addLights(group, 2.3, 2.5, 0.9, matLightWhite, matLightRed);
+
+            } else if (config.type === 'hyper') {
+                wheelY = 0.45;
+                const body = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 1.5, 5, 4), matBody);
+                body.rotation.y = Math.PI/4;
+                body.rotation.x = Math.PI/2;
+                body.scale.set(1, 1, 0.5);
+                body.position.y = 0.5;
+                group.add(body);
+                
+                const fLight = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.05, 0.1), matLightWhite); 
+                fLight.position.set(0, 0.5, -2.4); group.add(fLight);
+                const rLight = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.05, 0.1), matLightRed); 
+                rLight.position.set(0, 0.8, 2.4); group.add(rLight);
+            }
+
+            // Wheels
+            const wheelGeo = new THREE.CylinderGeometry(wheelY, wheelY, 0.3, 12);
+            const wheelPos = [ {x: 1.1, z: -1.5}, {x: -1.1, z: -1.5}, {x: 1.1, z: 1.5}, {x: -1.1, z: 1.5} ];
+
+            wheelPos.forEach(p => {
+                const w = new THREE.Mesh(wheelGeo, matDark);
+                w.rotation.z = Math.PI/2;
+                w.position.set(p.x, wheelY, p.z);
+                group.add(w);
+                wheels.push(w);
+            });
+
+            group.traverse(o => { if(o.isMesh) o.castShadow = true; });
+            return group;
+        }
+
+        function addLights(group, w, l, y, matW, matR) {
+            const geo = new THREE.BoxGeometry(0.4, 0.2, 0.1);
+            const fl = new THREE.Mesh(geo, matW); fl.position.set(w/2 - 0.4, y, -l); group.add(fl);
+            const fr = new THREE.Mesh(geo, matW); fr.position.set(-w/2 + 0.4, y, -l); group.add(fr);
+            const bl = new THREE.Mesh(geo, matR); bl.position.set(w/2 - 0.4, y, l); group.add(bl);
+            const br = new THREE.Mesh(geo, matR); br.position.set(-w/2 + 0.4, y, l); group.add(br);
+        }
+
+        // --- GAME LOGIC ---
+        function updatePhysics(time) {
+            carGroup.position.z -= state.speed;
+
+            const steerForce = 0.4;
+            if(keys.a || keys.ArrowLeft) {
+                carGroup.position.x -= steerForce;
+                carGroup.rotation.y = 0.15; carGroup.rotation.z = 0.05;
+            } else if(keys.d || keys.ArrowRight) {
+                carGroup.position.x += steerForce;
+                carGroup.rotation.y = -0.15; carGroup.rotation.z = -0.05;
+            } else {
+                carGroup.rotation.y *= 0.8; carGroup.rotation.z *= 0.8;
+            }
+            carGroup.position.x = Math.max(-6.5, Math.min(6.5, carGroup.position.x));
+
+            const gridSnap = Math.floor(carGroup.position.z / 10) * 10;
+            roadGroup.position.z = gridSnap + 50;
+
+            if (carGroup.position.z < state.lastSpawnZ + 10) {
+                state.lastSpawnZ -= 20;
+                spawnObstacles(state.lastSpawnZ);
+                spawnSideElements(state.lastSpawnZ);
+            }
+
+            checkCollisions(time);
+
+            camera.position.z = carGroup.position.z + 10;
+            camera.position.y = 6;
+            camera.position.x = carGroup.position.x * 0.4;
+            camera.lookAt(carGroup.position.x, 0, carGroup.position.z - 8);
+
+            wheels.forEach(w => w.rotation.x -= 0.5);
+            document.getElementById('speed-meter').innerText = Math.floor(state.speed * 200);
+        }
+
+        function spawnObstacles(z) {
+            const lane = (Math.floor(Math.random() * 3) - 1) * 3; 
+            const type = Math.random() > 0.3 ? 'fire' : 'berry';
+            if(type === 'fire') createFire(lane, z);
+            else createStrawberry(lane, z);
+            
+            if(Math.random() > 0.6) {
+                const lane2 = (Math.floor(Math.random() * 3) - 1) * 3;
+                if(lane2 !== lane) createStrawberry(lane2, z);
+            }
+        }
+
+        function createStrawberry(x, z) {
+            const group = new THREE.Group();
+            
+            // Berry Body
+            const bodyGeo = new THREE.ConeGeometry(0.6, 1.1, 16);
+            const bodyMat = new THREE.MeshToonMaterial({ color: 0xd90429, emissive: 0x5a0012, emissiveIntensity: 0.3 });
+            const body = new THREE.Mesh(bodyGeo, bodyMat);
+            body.rotation.x = Math.PI;
+            group.add(body);
+
+            // Leaves
+            const leafGeo = new THREE.ConeGeometry(0.7, 0.3, 5);
+            const leafMat = new THREE.MeshToonMaterial({ color: 0x2d6a4f });
+            const leaf = new THREE.Mesh(leafGeo, leafMat);
+            leaf.position.y = 0.55;
+            group.add(leaf);
+            
+            // CORRECTED: Position the group directly, no parent pivot mess
+            group.position.set(x, 1.5, z);
+            
+            group.children.forEach(m => m.castShadow = true);
+            scene.add(group);
+            collidables.push({ mesh: group, type: 'berry', active: true });
+        }
+
+        function createFire(x, z) {
+            const group = new THREE.Group();
+            for(let i=0; i<4; i++) {
+                const h = 1 + Math.random();
+                const geo = new THREE.ConeGeometry(0.4, h, 4);
+                const mat = new THREE.MeshBasicMaterial({ color: Math.random()>0.5 ? 0xff0000 : 0xffaa00 });
+                const m = new THREE.Mesh(geo, mat);
+                m.position.set((Math.random()-0.5)*1.2, h/2, (Math.random()-0.5)*1.2);
+                m.userData = { offset: Math.random() * 10 };
+                group.add(m);
+            }
+            group.position.set(x, 0, z);
+            scene.add(group);
+            collidables.push({ mesh: group, type: 'fire', active: true });
+        }
+
+        function spawnSideElements(z) {
+            createGuardRail(-9, z);
+            createGuardRail(9, z);
+            
+            for(let i=0; i<3; i++) {
+                const zOffset = (Math.random()*20) - 10;
+                const leftX = -12 - Math.random()*20;
+                const rightX = 12 + Math.random()*20;
+                const type = Math.random() > 0.6 ? 'tree' : 'rock';
+                createSceneryItem(type, leftX, z + zOffset);
+                createSceneryItem(type, rightX, z + zOffset);
+            }
+        }
+
+        function createGuardRail(x, z) {
+            const rail = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.5, 20), new THREE.MeshStandardMaterial({color:0x555}));
+            rail.position.set(x, 0.25, z);
+            sceneryGroup.add(rail);
+            sceneryCollidables.push(rail);
+        }
+
+        function createSceneryItem(type, x, z) {
+            let mesh;
+            if(type === 'tree') {
+                const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.4, 1, 6), new THREE.MeshStandardMaterial({color: 0x4B3621}));
+                trunk.position.y = 0.5;
+                const leaves = new THREE.Mesh(new THREE.ConeGeometry(1.5, 3, 6), new THREE.MeshStandardMaterial({color: 0x14532d}));
+                leaves.position.y = 2.5;
+                mesh = new THREE.Group(); mesh.add(trunk); mesh.add(leaves);
+            } else { // Rock
+                const s = 1 + Math.random();
+                mesh = new THREE.Mesh(new THREE.DodecahedronGeometry(s, 0), new THREE.MeshStandardMaterial({color: 0x333}));
+                mesh.position.y = s/2;
+            }
+            mesh.position.set(x, 0, z); // Reset Y is handled per mesh type
+            if(type === 'rock') mesh.position.y = 0.5; // Fix rock height
+            
+            sceneryGroup.add(mesh);
+            sceneryCollidables.push(mesh);
+        }
+
+        function createRoad() {
+            const road = new THREE.Mesh(new THREE.PlaneGeometry(18, 200), new THREE.MeshStandardMaterial({color:0x1f2937}));
+            road.rotation.x = -Math.PI/2;
+            road.position.y = -0.05;
+            road.receiveShadow = true;
+            roadGroup.add(road);
+            
+            const grid = new THREE.GridHelper(200, 50, 0x14b8a6, 0x14b8a6);
+            grid.position.y = 0.01;
+            roadGroup.add(grid);
+        }
+
+        function createBackgroundShapes() {
+            const mat = new THREE.MeshBasicMaterial({color: 0x14b8a6, wireframe: true});
+            const geo = new THREE.IcosahedronGeometry(1);
+            for(let i=0; i<15; i++) {
+                const m = new THREE.Mesh(geo, mat);
+                m.position.set((Math.random()-0.5)*50, (Math.random()-0.5)*30, (Math.random()-0.5)*40);
+                shapesGroup.add(m);
+            }
+        }
+
+        // --- COLLISIONS & CLEANUP ---
+        function checkCollisions(time) {
+            const carPos = carGroup.position;
+            const threshold = 2.5;
+
+            // Iterate backwards for safe removal
+            for(let i = collidables.length - 1; i >= 0; i--) {
+                const obj = collidables[i];
+                if(!obj.active) continue;
+
+                // Animate
+                if(obj.type === 'berry') {
+                    obj.mesh.rotation.y += 0.05;
+                    obj.mesh.position.y = 1.5 + Math.sin(time * 3) * 0.2;
+                }
+                if(obj.type === 'fire') {
+                    obj.mesh.children.forEach(c => c.scale.y = 1 + Math.sin(time*10 + c.userData.offset)*0.2);
+                }
+
+                // Check Distance
+                if(obj.mesh.position.distanceTo(carPos) < threshold) {
+                    if(obj.type === 'fire') gameOver();
+                    else collectPoints(obj, i);
+                }
+
+                // Cleanup Off-screen
+                if(obj.mesh.position.z > carPos.z + 10) {
+                    scene.remove(obj.mesh);
+                    obj.active = false;
+                    collidables.splice(i, 1); // Remove from array to keep it small
+                }
+            }
+
+            // Cleanup Scenery
+            for(let i = sceneryCollidables.length - 1; i >= 0; i--) {
+                const mesh = sceneryCollidables[i];
+                if(mesh.position.z > carPos.z + 20) {
+                    sceneryGroup.remove(mesh);
+                    sceneryCollidables.splice(i, 1);
+                }
+            }
+        }
+
+        function collectPoints(obj, index) {
+            obj.active = false;
+            scene.remove(obj.mesh);
+            collidables.splice(index, 1);
+            
+            state.score += 100;
+            state.speed += 0.002;
+            document.getElementById('score-display').innerText = state.score;
+            playSound('score-sound');
+        }
+
+        function gameOver() {
+            state.isGameOver = true;
+            document.getElementById('bg-music').pause();
+            playSound('fire-hit-sound');
+            setTimeout(() => playSound('crash-sound'), 100);
+            
+            if(state.score > state.highScore) {
+                state.highScore = state.score;
+                localStorage.setItem('apex_highscore', state.score);
+            }
+            
+            document.getElementById('final-score').innerText = state.score;
+            document.getElementById('game-over-screen').style.display = 'flex';
+            document.getElementById('game-ui').style.display = 'none';
+        }
+
+        // --- GLOBAL & UI FUNCTIONS ---
+        window.changeCar = (dir) => {
+            let newIndex = state.selectedCarIndex + dir;
+            if(newIndex < 0) newIndex = CARS.length - 1;
+            if(newIndex >= CARS.length) newIndex = 0;
+            state.selectedCarIndex = newIndex;
+            updateUI();
+            loadCar(newIndex);
+        };
+
+        function updateUI() {
+            const car = CARS[state.selectedCarIndex];
+            document.getElementById('ui-car-name').innerText = car.name;
+            document.getElementById('menu-high-score').innerText = state.highScore;
+            
+            const btn = document.getElementById('start-btn');
+            const statusEl = document.getElementById('ui-car-status');
+            
+            if(state.highScore >= car.unlockScore) {
+                statusEl.innerText = "UNLOCKED";
+                statusEl.className = "car-status status-unlocked";
+                btn.disabled = false;
+                btn.innerText = "START ENGINE";
+                btn.style.opacity = "1";
+            } else {
+                statusEl.innerText = `LOCKED (${car.unlockScore} pts)`;
+                statusEl.className = "car-status status-locked";
+                btn.disabled = true;
+                btn.innerText = "LOCKED";
+                btn.style.opacity = "0.5";
+            }
+        }
+
+        window.startGame = () => {
+            state.gameActive = true;
+            state.isGameOver = false;
+            state.score = 0;
+            state.speed = 0.375;
+            document.getElementById('score-display').innerText = '0';
+            document.getElementById('main-menu').style.display = 'none';
+            document.getElementById('game-ui').style.display = 'block';
+            document.getElementById('game-over-screen').style.display = 'none';
+            shapesGroup.visible = false;
+            
+            const bgMusic = document.getElementById('bg-music');
+            bgMusic.currentTime = 0;
+            bgMusic.volume = 0.6;
+            bgMusic.play().catch(()=>{});
+
+            carGroup.position.set(0,0,0);
+            carGroup.rotation.set(0,0,0);
+            state.lastSpawnZ = -20;
+            
+            // Clear World
+            collidables.forEach(c => scene.remove(c.mesh));
+            collidables = [];
+            sceneryCollidables.forEach(s => sceneryGroup.remove(s));
+            sceneryCollidables = [];
+            while(sceneryGroup.children.length > 0) sceneryGroup.remove(sceneryGroup.children[0]);
+        };
+
+        window.resetGame = window.startGame;
+
+        window.stopGame = () => {
+            state.gameActive = false;
+            document.getElementById('main-menu').style.display = 'flex';
+            document.getElementById('game-ui').style.display = 'none';
+            document.getElementById('game-over-screen').style.display = 'none';
+            shapesGroup.visible = true;
+            carGroup.position.set(0,0,0);
+            document.getElementById('bg-music').pause();
+            updateUI();
+        };
+
+        function playSound(id) {
+            const s = document.getElementById(id);
+            if(s) { s.currentTime=0; s.play().catch(()=>{}); }
+        }
+
+        // Inputs
+        window.addEventListener('keydown', e => {
+            if(e.key === 'a' || e.key === 'ArrowLeft') keys.a = true;
+            if(e.key === 'd' || e.key === 'ArrowRight') keys.d = true;
+            if(state.isGameOver && e.key === 'Enter') resetGame();
+        });
+        window.addEventListener('keyup', e => {
+            if(e.key === 'a' || e.key === 'ArrowLeft') keys.a = false;
+            if(e.key === 'd' || e.key === 'ArrowRight') keys.d = false;
+        });
+
+        const handleLeftDown = (e) => { e.preventDefault(); keys.a = true; };
+        const handleLeftUp = (e) => { e.preventDefault(); keys.a = false; };
+        const handleRightDown = (e) => { e.preventDefault(); keys.d = true; };
+        const handleRightUp = (e) => { e.preventDefault(); keys.d = false; };
+
+        // Visible Buttons (Mobile)
+        document.getElementById('btn-left').addEventListener('touchstart', handleLeftDown);
+        document.getElementById('btn-left').addEventListener('touchend', handleLeftUp);
+        document.getElementById('btn-right').addEventListener('touchstart', handleRightDown);
+        document.getElementById('btn-right').addEventListener('touchend', handleRightUp);
+        
+        // Touch Zones (Backup)
+        document.getElementById('touch-left').addEventListener('touchstart', handleLeftDown);
+        document.getElementById('touch-left').addEventListener('touchend', handleLeftUp);
+        document.getElementById('touch-right').addEventListener('touchstart', handleRightDown);
+        document.getElementById('touch-right').addEventListener('touchend', handleRightUp);
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth/window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        init();
+    </script>
+</body>
+</html>
             touch-action: none;
         }
 
